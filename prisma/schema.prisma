@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum AssetType {
+  ORIGINAL
+  EDITED
+  THUMBNAIL
+}
+
+enum ModerationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id         String      @id @default(cuid())
+  email      String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  prompts    EditPrompt[]
+  jobs       ImageJob[]
+}
+
+model ImageJob {
+  id               String             @id @default(cuid())
+  status           JobStatus          @default(QUEUED)
+  progress         Int                @default(0)
+  errorMessage     String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  userId           String?
+  user             User?              @relation(fields: [userId], references: [id])
+  sourceAssetId    String
+  sourceAsset      ImageAsset         @relation("SourceAsset", fields: [sourceAssetId], references: [id])
+  result           GenerationResult?
+  prompt           EditPrompt?
+  moderationEvents ModerationEvent[]
+}
+
+model ImageAsset {
+  id             String          @id @default(cuid())
+  filename       String
+  mimeType       String
+  sizeBytes      Int
+  url            String
+  storageKey     String
+  assetType      AssetType
+  createdAt      DateTime        @default(now())
+  sourceJobs     ImageJob[]      @relation("SourceAsset")
+  resultAssets   GenerationResult[]
+}
+
+model EditPrompt {
+  id          String   @id @default(cuid())
+  text        String
+  strength    String   @default("balanced")
+  createdAt   DateTime @default(now())
+  jobId       String   @unique
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  job         ImageJob @relation(fields: [jobId], references: [id])
+}
+
+model ModerationEvent {
+  id          String             @id @default(cuid())
+  reason      String
+  severity    ModerationSeverity @default(LOW)
+  blocked     Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  jobId       String
+  job         ImageJob           @relation(fields: [jobId], references: [id])
+}
+
+model GenerationResult {
+  id            String     @id @default(cuid())
+  createdAt     DateTime   @default(now())
+  metrics       Json?
+  jobId         String     @unique
+  assetId       String
+  job           ImageJob   @relation(fields: [jobId], references: [id])
+  asset         ImageAsset @relation(fields: [assetId], references: [id])
+}

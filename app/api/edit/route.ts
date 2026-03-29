@@ -11,56 +11,90 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = editSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+      const errors = parsed.error.flatten();
+      const message = Object.values(errors.fieldErrors).flat().join('. ') || 'Invalid request';
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    const sourceAsset = await dbApi.getAsset(parsed.data.sourceAssetId);
+    const { sourceAssetId, prompt, strength } = parsed.data;
+
+    const sourceAsset = await dbApi.getAsset(sourceAssetId);
     if (!sourceAsset) {
-      return NextResponse.json({ error: 'Unknown source asset' }, { status: 404 });
+      return NextResponse.json({ error: 'Source image not found.' }, { status: 404 });
     }
 
-    const moderationEvents = moderatePrompt(parsed.data.prompt);
+    const moderationEvents = moderatePrompt(prompt);
     if (moderationEvents.some((e) => e.blocked)) {
-      return NextResponse.json({ error: 'Prompt blocked', moderationEvents }, { status: 400 });
+      return NextResponse.json({
+        error: 'Your prompt was blocked by our content policy.',
+        moderationEvents,
+      }, { status: 400 });
     }
 
+    // Create the job record
     const job = await dbApi.createJob({
       status: 'RUNNING',
       progress: 15,
-      sourceAssetId: parsed.data.sourceAssetId,
+      sourceAssetId,
       prompt: {
         id: randomUUID(),
-        text: parsed.data.prompt,
-        strength: parsed.data.strength,
+        text: prompt,
+        strength,
         createdAt: new Date().toISOString(),
       },
       moderationEvents,
     });
 
-    const result = await imageEditorProvider.generateEdit({
-      sourceKey: sourceAsset.storageKey,
-      prompt: parsed.data.prompt,
-      strength: parsed.data.strength,
-    });
+    // Update progress to 40% before starting generation
+    await dbApi.updateJob(job.id, { progress: 40 });
 
-    const stored = await storageProvider.save(result.outputBuffer, `edited-${Date.now()}.png`, result.mimeType, 'edited');
-    const resultAsset = await dbApi.createAsset({
-      filename: 'edited.png',
-      mimeType: result.mimeType,
-      sizeBytes: stored.size,
-      url: stored.url,
-      storageKey: stored.key,
-      assetType: 'EDITED',
-    });
+    try {
+      const result = await imageEditorProvider.generateEdit({
+        sourceKey: sourceAsset.storageKey,
+        prompt,
+        strength,
+      });
 
-    await dbApi.updateJob(job.id, {
-      status: 'SUCCEEDED',
-      progress: 100,
-      result: { id: randomUUID(), assetId: resultAsset.id, createdAt: new Date().toISOString(), metrics: result.metrics },
-    });
+      await dbApi.updateJob(job.id, { progress: 80 });
 
-    return NextResponse.json({ jobId: job.id });
+      const stored = await storageProvider.save(
+        result.outputBuffer,
+        `edited-${Date.now()}.png`,
+        result.mimeType,
+        'edited'
+      );
+
+      const resultAsset = await dbApi.createAsset({
+        filename: `edited-${job.id}.png`,
+        mimeType: result.mimeType,
+        sizeBytes: stored.size,
+        url: stored.url,
+        storageKey: stored.key,
+        assetType: 'EDITED',
+      });
+
+      await dbApi.updateJob(job.id, {
+        status: 'SUCCEEDED',
+        progress: 100,
+        result: {
+          id: randomUUID(),
+          assetId: resultAsset.id,
+          createdAt: new Date().toISOString(),
+          metrics: result.metrics,
+        },
+      });
+
+      return NextResponse.json({ jobId: job.id });
+    } catch (genError) {
+      await dbApi.updateJob(job.id, {
+        status: 'FAILED',
+        progress: 100,
+        errorMessage: genError instanceof Error ? genError.message : 'Generation failed',
+      });
+      return NextResponse.json({ jobId: job.id, error: 'Generation failed' }, { status: 500 });
+    }
   } catch (error) {
-    return NextResponse.json({ error: 'Edit failed', details: String(error) }, { status: 500 });
+    console.error('Edit error:', error);
+    return NextResponse.json({ error: 'Edit request failed. Please try again.' }, { status: 500 });
   }
 }

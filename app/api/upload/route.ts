@@ -11,9 +11,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
     }
 
-    const parsed = uploadSchema.safeParse({ fileName: file.name, mimeType: file.type, size: file.size });
+    const parsed = uploadSchema.safeParse({
+      fileName: file.name,
+      mimeType: file.type,
+      size: file.size,
+    });
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+      const errors = parsed.error.flatten();
+      const message = Object.values(errors.fieldErrors).flat().join('. ') || 'Invalid file';
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -29,6 +35,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ assetId: asset.id, url: asset.url });
   } catch (error) {
-    return NextResponse.json({ error: 'Upload failed', details: String(error) }, { status: 500 });
+    console.error('Upload error:', error);
+    return NextResponse.json({ error: 'Upload failed. Please try again.' }, { status: 500 });
   }
 }

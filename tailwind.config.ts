@@ -5,8 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: '#6d28d9'
-      }
+        brand: {
+          DEFAULT: '#7c3aed',
+          light: '#a78bfa',
+        },
+      },
     },
   },
   plugins: [],

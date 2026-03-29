@@ -51,3 +51,37 @@ export interface JobWithAssets extends ImageJob {
   sourceAsset: ImageAsset;
   resultAsset?: ImageAsset;
 }
+
+export interface EditRequest {
+  sourceAssetId: string;
+  prompt: string;
+  strength: Strength;
+}
+
+export interface UploadResponse {
+  assetId: string;
+  url: string;
+}
+
+export interface EditResponse {
+  jobId: string;
+}
+
+export interface HistoryResponse {
+  jobs: JobWithAssets[];
+}
+
+export const EXAMPLE_PROMPTS = [
+  'Change the outfit to a black leather jacket',
+  'Swap the background to a tropical beach at sunset',
+  'Make the image look cinematic with golden-hour lighting',
+  'Add stylish sunglasses',
+  'Remove the background clutter',
+  'Change lighting to dramatic studio lighting',
+  'Turn this into an oil painting style',
+  'Make the colors more vibrant and saturated',
+  'Change the season to winter with snow',
+  'Add a soft bokeh background blur',
+  'Make it look like a vintage 1970s photograph',
+  'Change the hair color to platinum blonde',
+];

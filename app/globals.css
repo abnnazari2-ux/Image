@@ -2,78 +2,151 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  --brand: #7c3aed;
-  --brand-light: #a78bfa;
+  --brand: #2563EB;
+  --brand-light: #60A5FA;
+  --brand-dark: #1D4ED8;
+  --navy-900: #0A0F1E;
+  --navy-800: #0F1729;
+  --navy-700: #162035;
+  --navy-600: #1E2D47;
+  --accent-green: #10B981;
+  --accent-teal: #06B6D4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  @apply bg-navy-900 text-slate-100 antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* ── Layout ─────────────────────────────────── */
 .container-main {
-  @apply max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8;
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
+.section-py {
+  @apply py-16 sm:py-20 lg:py-24;
+}
+
+/* ── Cards ───────────────────────────────────── */
 .card {
-  @apply rounded-xl border border-slate-800 bg-slate-900/70 p-4 sm:p-6;
+  @apply rounded-2xl border border-slate-800 bg-navy-800 p-6 sm:p-8;
 }
 
+.card-hover {
+  @apply card transition-all duration-300 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white
+         hover:bg-brand-dark active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed
+         transition-all duration-150 shadow-lg shadow-blue-500/25;
+}
+
+.btn-primary-lg {
+  @apply btn-primary px-8 py-4 text-lg;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-600 bg-transparent px-6 py-3 font-semibold text-white
+         hover:border-blue-400 hover:bg-navy-700 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed
+         transition-all duration-150;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm text-slate-300
+         hover:text-white hover:bg-navy-700 transition-all duration-150;
+}
+
+/* Legacy button classes used by old components */
+.button {
+  @apply btn-primary;
+}
+
+.button-secondary {
+  @apply btn-secondary;
+}
+
+.button-ghost {
+  @apply btn-ghost;
+}
+
+/* ── Form Inputs ─────────────────────────────── */
 .input {
-  @apply w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-slate-100
+  @apply w-full rounded-lg border border-slate-700 bg-navy-900 px-4 py-3 text-slate-100
          placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent
          transition-all duration-200;
 }
 
-.button {
-  @apply rounded-lg bg-brand px-5 py-2.5 font-medium text-white
-         hover:bg-brand/90 active:scale-[0.98]
-         disabled:opacity-40 disabled:cursor-not-allowed
-         transition-all duration-150 inline-flex items-center justify-center gap-2;
+/* ── Typography ──────────────────────────────── */
+.heading-xl {
+  @apply text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight;
 }
 
-.button-secondary {
-  @apply rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200
-         hover:bg-slate-700 active:scale-[0.98]
-         disabled:opacity-40 disabled:cursor-not-allowed
-         transition-all duration-150 inline-flex items-center justify-center gap-2;
+.heading-lg {
+  @apply text-3xl sm:text-4xl font-bold tracking-tight leading-tight;
 }
 
-.button-ghost {
-  @apply rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800
-         transition-all duration-150;
+.heading-md {
+  @apply text-2xl sm:text-3xl font-bold tracking-tight;
 }
 
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+.section-label {
+  @apply text-xs font-semibold uppercase tracking-widest text-blue-400;
 }
 
-.animate-pulse-slow {
-  animation: pulse-slow 2s ease-in-out infinite;
+/* ── Badges ──────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
 }
 
-@keyframes progress-stripe {
-  0% { background-position: 1rem 0; }
-  100% { background-position: 0 0; }
+.badge-blue {
+  @apply badge bg-blue-500/10 text-blue-400 border border-blue-500/20;
 }
 
-.progress-bar-animated {
-  background-image: linear-gradient(
-    45deg,
-    rgba(255,255,255,0.1) 25%,
-    transparent 25%,
-    transparent 50%,
-    rgba(255,255,255,0.1) 50%,
-    rgba(255,255,255,0.1) 75%,
-    transparent 75%,
-    transparent
-  );
-  background-size: 1rem 1rem;
-  animation: progress-stripe 0.5s linear infinite;
+.badge-green {
+  @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
 }
 
-/* Comparison slider */
+.badge-teal {
+  @apply badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20;
+}
+
+/* ── Gradient text ────────────────────────────── */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400;
+}
+
+.gradient-text-green {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400;
+}
+
+/* ── Nav dropdown ─────────────────────────────── */
+.nav-dropdown {
+  @apply absolute top-full left-0 mt-1 w-56 rounded-xl border border-slate-700 bg-navy-800 shadow-xl shadow-black/40 py-2 z-50;
+}
+
+.nav-dropdown-item {
+  @apply flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-navy-700 transition-colors;
+}
+
+/* ── Divider ─────────────────────────────────── */
+.divider {
+  @apply border-t border-slate-800;
+}
+
+/* ── Comparison slider (kept for old components) ─ */
 .comparison-container {
   position: relative;
   overflow: hidden;
@@ -106,4 +179,68 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ── Animations ─────────────────────────────── */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+@keyframes progress-stripe {
+  0% { background-position: 1rem 0; }
+  100% { background-position: 0 0; }
+}
+.progress-bar-animated {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255,255,255,0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255,255,255,0.1) 50%,
+    rgba(255,255,255,0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: progress-stripe 0.5s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ── Glow effects ─────────────────────────────── */
+.glow-blue {
+  box-shadow: 0 0 40px rgba(37, 99, 235, 0.15);
+}
+
+.glow-green {
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.15);
+}
+
+/* ── Checkmark list ──────────────────────────── */
+.check-list li {
+  @apply flex items-start gap-3 text-slate-300;
+}
+
+.check-list li::before {
+  content: '';
+  @apply flex-shrink-0 mt-1 w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2310B981'%3E%3Cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-size: 14px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ── Stars ──────────────────────────────────── */
+.stars {
+  @apply flex gap-0.5 text-amber-400;
 }
